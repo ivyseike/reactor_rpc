@@ -133,7 +133,6 @@ void clientCode(int serverPort){
 
 }
 
-
 template<typename R, typename... A>
 bool test(R (*func)(A...)) {
     return std::is_void<R>::value;
@@ -152,26 +151,15 @@ bool t(const F& func){
     return res;
 }
 
-void hello(int a){
+int hello(int a){
     std::cout << "hello" << a << std::endl;
 }
 
-
-
 int main() {
-    std::cout << t(hello) << std::endl;
-
-
-    //RPC_Server s(9000);
-
-    bool b = t(hello);
-    
-    //s.call_proxy(f, "a", nullptr);
-    //auto res = s.call(f, t);
-    //std::cout << res << std::endl;
-    
-
-    //RPC_Client c("127.0.0.1", 9000);
+    RPC_Client c("127.0.0.1", 9000);
+    std::string msg;
+    c.call<int>(msg, "hello", 1);
+    std::cout << msg << std::endl;
 //    Codec c_;
 //    auto res = c_.pack_args("hello", 2, "abc");
     //auto [res, success] = c.call<int>("hello",1);
@@ -185,9 +173,6 @@ int main() {
 //    Codec c;
 //    std::thread thread1(serverCode, 9000);
 //    std::thread thread2(clientCode, 9000);
-
-
-
 
     return 0;
 }

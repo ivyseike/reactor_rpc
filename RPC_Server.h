@@ -13,6 +13,7 @@
 #include <unordered_map>
 #include "traits.h"
 
+
 class RPC_Server{
 public:
     using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
@@ -30,6 +31,7 @@ public:
         server_->setMessageCallback(std::bind(&RPC_Server::onMessage, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
     }
 
+    RPC_Server() = delete;
     RPC_Server(const RPC_Server&) = delete;
     RPC_Server& operator=(const RPC_Server&) = delete;
 
@@ -81,6 +83,13 @@ public:
 
         auto [res, arg_tuple] = codec_->unpack<args_type>(args);
         if(res == 0){
+            /*
+            if(test_void(func)){
+                std::apply(func, arg_tuple);
+                send_result(conn, "Function successfully called");
+            }
+            else{
+                */
             auto func_res = std::apply(func, arg_tuple);
             //auto func_res = call(func, arg_tuple);
             send_result(conn, func_res);

@@ -17,6 +17,7 @@ public:
     using ConnectionCallback = std::function<void(const TcpConnectionPtr&)> ;
     using MessageCallback = std::function<void(const TcpConnectionPtr&, const char* buffer, int len)>;
 
+    RPC_Client() = delete;
     RPC_Client(const RPC_Client&) = delete;
     RPC_Client& operator=(const RPC_Client&) = delete;
     RPC_Client(std::string ip, uint16_t port): serverAddr_(ip, port), loop_(new EventLoop),
@@ -30,11 +31,10 @@ public:
         client_.connect();
     }
 
-
-
     template<typename T, typename... Args>
-    std::pair<typename std::enable_if<!std::is_void<T>::value, T>::type, bool> call(const std::string& func_name, Args&&... args){
+    std::pair<typename std::enable_if<!std::is_void<T>::value, T>::type, bool> call(std::string& msg, const std::string& func_name, Args&&... args){
         if(conn_ == nullptr){
+            msg = "Connection not established";
             return std::make_pair(T(), false);
         }
 
@@ -48,7 +48,8 @@ public:
         std::unique_lock<std::mutex> lk(m_);
         cond_.wait(lk, [this] { return read_bytes != 0 && read_bytes == readBuffer_.size(); });
 
-       return codec_->template unpack_result<T>(readBuffer_);
+        auto res = codec_->unpack_result<T>(readBuffer_, msg);
+        return res;
     };
 
     void onConnection(const TcpConnectionPtr& conn){

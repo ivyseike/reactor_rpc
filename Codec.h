@@ -31,6 +31,14 @@ public:
         j["arg" + std::to_string(cur_index++)] = arg;
     }
 
+    template <typename T>
+    std::string pack_result(T result, bool success){
+        configor::json j_;
+        j_["result"] = result;
+        j_["success"] = true;
+        return j_.dump();
+    }
+
     template <typename... ArgTypes>
     std::pair<int, std::tuple<ArgTypes...>> unpack(std::string s){
         configor::json j_ = configor::json::parse(s);
@@ -58,13 +66,6 @@ public:
         return std::make_pair(0, arg_tuple);
     }
 
-    template <typename T>
-    std::string pack_result(T result, bool success){
-        configor::json j_;
-        j_["result"] = result;
-        j_["success"] = true;
-        return j_.dump();
-    }
 
     std::string unpack_func_name(const std::string& s){
         configor::json j_ = configor::json::parse(s);
@@ -84,28 +85,30 @@ public:
     }
 
     template<typename T>
-    std::pair<T, bool> unpack_result(const std::string& s){
+    std::pair<typename std::enable_if<!std::is_void<T>::value, T>::type, bool> unpack_result(const std::string& s, std::string& msg){
         configor::json j_ = configor::json::parse(s);
         bool success = false;
         if(j_["success"].try_get(success)){
             if(success){
-                if(!j_["result"].is_null()){
-                    try{
-                        return std::make_pair(j_["result"], true);
-                    }
-                    catch(...){
-                        return std::make_pair(T(), false);
-                    }
+                try{
+                    return std::make_pair(j_["result"], true);
+                }
+                catch(...){
+                    msg = "Error when unpacking";
+                    return std::make_pair(T(), false);
                 }
             }
+            else{
+                if(!j_["result"].try_get(msg)) msg = "No error message";
+                return std::make_pair(T(), false);
+            }
         }
-        return std::make_pair(T(), false);
     }
+
 
 private:
     configor::json j;
     int cur_index;
-
 
 };
 
