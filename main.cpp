@@ -14,14 +14,14 @@
 #include "TcpClient.h"
 #include "Codec.h"
 #include "RPC_Server.h"
+#include "RPC_Client.h"
+#include "traits.h"
 
 #include <signal.h>
 #include <cstdlib>
 #include <execinfo.h>
 
 #include "configor/json.hpp"
-#include "RPC_Client.h"
-//#include "RPC_Client.h"
 
 #define BACKTRACE_SIZE 16
 
@@ -134,34 +134,49 @@ void clientCode(int serverPort){
 }
 
 
+template<typename R, typename... A>
+bool test(R (*func)(A...)) {
+    return std::is_void<R>::value;
+}
+
+template<typename U, typename... T>
+constexpr bool contains(std::tuple<T...>) {
+    return (std::is_same_v<U, T> || ...);
+}
+
+template<typename F>
+bool t(const F& func){
+    using args_type = typename function_traits<F>::tuple_type;
+    args_type a;
+    auto res = contains<void>(a);
+    return res;
+}
+
+void hello(int a){
+    std::cout << "hello" << a << std::endl;
+}
+
+
 
 int main() {
-    RPC_Client c("127.0.0.1", 9000);
+    std::cout << t(hello) << std::endl;
+
+
+    //RPC_Server s(9000);
+
+    bool b = t(hello);
+    
+    //s.call_proxy(f, "a", nullptr);
+    //auto res = s.call(f, t);
+    //std::cout << res << std::endl;
+    
+
+    //RPC_Client c("127.0.0.1", 9000);
 //    Codec c_;
 //    auto res = c_.pack_args("hello", 2, "abc");
-    auto [res, success] = c.call<int>("hello",1);
-    std::cout << success << std::endl;
+    //auto [res, success] = c.call<int>("hello",1);
+    //std::cout << success << std::endl;
 
-
-
-//    std::string json_str = j.dump();
-//    unsigned int bytes = strlen(json_str.c_str());
-//    std::cout << bytes << std::endl;
-//    char header[4]; // 4 bytes
-//
-//    header[0] = bytes >> 24 & 0xFF; //高位
-//    header[1] = bytes >> 16 & 0xFF;
-//    header[2] = bytes >> 8 & 0xFF;
-//    header[3] = bytes & 0xFF; //低位
-//    printf("%x %x %x %x\n", (unsigned char)header[0], (unsigned char)header[1], (unsigned char)header[2], (unsigned char)header[3]);
-//
-//    unsigned int recover = 0;
-//    recover += header[0] << 24;
-//    recover += header[1] << 16;
-//    recover += header[2] << 8;
-//    recover += header[3];
-
-//    std::cout << recover << std::endl;
 //    RPC_Server s(9000);
 //    s.register_handler("clientCode", clientCode);
 

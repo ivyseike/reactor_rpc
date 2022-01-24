@@ -59,7 +59,7 @@ public:
     }
 
     template <typename T>
-    std::string pack_result(T result){
+    std::string pack_result(T result, bool success){
         configor::json j_;
         j_["result"] = result;
         j_["success"] = true;

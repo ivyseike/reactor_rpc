@@ -13,8 +13,6 @@
 #include <unordered_map>
 #include "traits.h"
 
-
-
 class RPC_Server{
 public:
     using TcpConnectionPtr = std::shared_ptr<TcpConnection>;
@@ -65,13 +63,11 @@ public:
         auto func_name = codec_->unpack_func_name(readBuffers_[conn]);
         auto iter = registered_functions.find(func_name);
         if(iter == registered_functions.end()){
-            send_error_msg(conn, "Function name unregistered");
+            send_result(conn, "Function name unregistered", false);
         }
         else{
             registered_functions[func_name](readBuffers_[conn], conn);
         }
-
-
     }
 
     void start(){
@@ -82,25 +78,25 @@ public:
     template<typename F>
     void call_proxy(F func, std::string args, const TcpConnectionPtr& conn){
         using args_type = typename function_traits<F>::tuple_type;
+
         auto [res, arg_tuple] = codec_->unpack<args_type>(args);
         if(res == 0){
-            auto func_res = call(func, arg_tuple);
+            auto func_res = std::apply(func, arg_tuple);
+            //auto func_res = call(func, arg_tuple);
             send_result(conn, func_res);
         }
         else{
-            send_error_msg(conn, "Parameter mismatch");
+            send_result(conn, "Parameter mismatch", false);
+            //send_error_msg(conn, "Parameter mismatch");
         }
     }
 
-    void send_error_msg(const TcpConnectionPtr& conn, const std::string& msg){ //需要增加加包头的部分，而且格式不对
-        conn->send(msg);
-    }
-
     template<typename T>
-    void send_res(const TcpConnectionPtr& conn, T res){ //需要增加加包头的部分
-         auto msg = codec_->pack_result(res);
+    void send_result(const TcpConnectionPtr& conn, T res, bool success = true){ //需要增加加包头的部分
+         auto msg = codec_->pack_result(res, success);
+         const char* headers = codec_->cal_headers(msg);
+         conn->send(headers, 4);
          conn->send(msg);
-
     }
 
     template <typename FuncType>
@@ -115,11 +111,10 @@ public:
 
     template<typename Function, typename Tuple>
     auto call(Function f, Tuple t){
+        //auto res = std::apply(f, t);
         static constexpr auto size = std::tuple_size<Tuple>::value;
         return call(f, t, std::make_index_sequence<size>{});
     }
-
-
 
 private:
     EventLoop* loop_;
