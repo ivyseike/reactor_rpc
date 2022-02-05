@@ -15,7 +15,7 @@ class Poller;
 
 class EventLoop{
 public:
-    EventLoop();
+    EventLoop(int poller = 0);
     ~EventLoop();
     EventLoop(const EventLoop&) = delete;
     EventLoop& operator=(const EventLoop&) = delete;

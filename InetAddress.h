@@ -23,7 +23,7 @@ public:
 
     const struct sockaddr* getSockAddr() const { return (struct sockaddr*)&addr_; }
     void setSockAddrIn(const struct sockaddr_in& addr){ addr_ = addr;}
-    static bool resolve(std::string hostname, InetAddress *result);
+    //static bool resolve(std::string hostname, InetAddress *result);
 
 private:
     struct sockaddr_in addr_;

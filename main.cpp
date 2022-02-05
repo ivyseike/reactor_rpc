@@ -133,28 +133,6 @@ void clientCode(int serverPort){
 
 }
 
-template<typename R, typename... A>
-bool test(R (*func)(A...)) {
-    return std::is_void<R>::value;
-}
-
-template<typename U, typename... T>
-constexpr bool contains(std::tuple<T...>) {
-    return (std::is_same_v<U, T> || ...);
-}
-
-template<typename F>
-bool t(const F& func){
-    using args_type = typename function_traits<F>::tuple_type;
-    args_type a;
-    auto res = contains<void>(a);
-    return res;
-}
-
-int hello(int a){
-    std::cout << "hello" << a << std::endl;
-}
-
 int main() {
     RPC_Client c("127.0.0.1", 9000);
     std::string msg;

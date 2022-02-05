@@ -40,6 +40,7 @@ std::string InetAddress::toIpPort() const {
     return std::string(buff) + ":" +  std::to_string(ntohs(addr_.sin_port));
 }
 
+/*
 bool InetAddress::resolve(std::string hostname, InetAddress* out)
 {
     assert(out != nullptr);
@@ -57,4 +58,5 @@ bool InetAddress::resolve(std::string hostname, InetAddress* out)
     return false;
 
 }
+*/
 

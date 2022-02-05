@@ -16,24 +16,23 @@ class Poller{
 public:
     using ChannelList = std::vector<Channel*>;
 
-    Poller(EventLoop* loop); //只属于一个Eventloop
-    ~Poller() = default;
+    //Poller(EventLoop* loop); //只属于一个Eventloop
+    Poller(EventLoop *loop): ownerLoop_(loop) {}
+    virtual ~Poller() = default;
     Poller(const Poller&) = delete;
     Poller& operator=(const Poller&) = delete;
 
-    void poll(int timeoutMs, ChannelList *activeChannels);
-    void updateChannel(Channel* channel);
+    virtual void poll(int timeoutMs, ChannelList *activeChannels);
+    virtual void updateChannel(Channel* channel);
+    virtual void removeChannel(Channel* channel);
     void assertInLoopThread() { ownerLoop_->assertInLoopThread(); }
     bool hasChannel(Channel* channel){ return channels_.find(channel->fd()) != channels_.end(); }
-    void removeChannel(Channel* channel);
 
-private:
-    void fillActiveChannels(int numEvents, ChannelList *activeChannels) const;
-    using PollFdList = std::vector<pollfd>;
+protected:
+    virtual void fillActiveChannels(int numEvents, ChannelList *activeChannels) const;
     using ChannelMap = std::unordered_map<int, Channel*>;
 
     EventLoop* ownerLoop_;
-    PollFdList pollfds_;
     ChannelMap channels_;
 };
 

@@ -2,7 +2,7 @@
 // Created by Yuchen Qin on 2021/9/18.
 
 #include "EventLoop.h"
-#include "Poller.h"
+#include "PollPoller.h"
 #include "Channel.h"
 #include <iostream>
 #include <memory>
@@ -12,12 +12,13 @@ __thread EventLoop* loopInThisThread = nullptr;
 
 const int kPollTimeMs = 10000;
 
-EventLoop::EventLoop(): looping(false), poller_(new Poller(this)),
+EventLoop::EventLoop(int poller): looping(false), poller_(nullptr),
     threadId_(std::this_thread::get_id()), quit_(false) {
    if(loopInThisThread != nullptr) {
        abortNotInLoopThread();
    }
    else{
+       if(!poller) poller_.reset(new PollPoller(this));
        loopInThisThread = this;
        auto res = pipe(wakeupPipe);
        if(res == -1){

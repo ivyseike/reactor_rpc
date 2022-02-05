@@ -10,8 +10,7 @@
 #include <iostream>
 #include <fcntl.h>
 
-void setNonBlockAndCloseOnExec(int sockfd)
-{
+void setNonBlockAndCloseOnExec(int sockfd){
     // non-block
     int flags = ::fcntl(sockfd, F_GETFL, 0);
     flags |= O_NONBLOCK;
